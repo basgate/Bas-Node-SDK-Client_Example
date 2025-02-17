@@ -59,7 +59,7 @@
     </script>
 
     <center>
-            <button onclick='getUserInfoV2()' >1-BasGate UserInfoV2</button>
+            <button onclick='ReqUserInfoV2()' >1-BasGate UserInfoV2</button>
             <button onclick='getAuthCode()' >1-BasGate Auth</button>
             <button onclick='processPayment()' >2-BasGate Payment</button>
             <button onclick='checkPayment()' >3-BasGate Status</button>
@@ -126,7 +126,7 @@
     }
     
 
-    async function getUserInfoV2(){
+    async function ReqUserInfoV2(){
         console.log("====== getUserInfoV2() ===========");
         if(!isJSBridgeReady){
             alert("BasSDK is not ready yet")
