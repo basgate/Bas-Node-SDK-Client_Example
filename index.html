@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documet</title>
+    <script type = "text/javascript" src="./config/config.js"></script>
+    <script type = "text/javascript" src="./client-sdk/client-helper.js"></script>
+    <script type = "text/javascript" src="./client-sdk/clientsdk.js"></script>
+</head>
+<body>
+    <br>
+   <center><h2> Bas JavaScript SDK v0.11</h2></center> 
+    <br>
+    <h4>Device Information</h4>
+    <p id="device-info"></p>
+
+    <script>
+        // function getAndroidArchitecture() {
+        //     const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+        //     let architecture = "Unknown";
+
+        //     // Check for Android in the user agent
+        //     if (/android/i.test(userAgent)) {
+        //         // Most Android devices use ARM architecture, but we can check for specific hints
+        //         if (/arm/i.test(userAgent) || /aarch64/i.test(userAgent)) {
+        //             architecture = "ARM (32-bit or 64-bit)";
+        //         } else if (/x86/i.test(userAgent) || /i686/i.test(userAgent)) {
+        //             architecture = "x86 (32-bit)";
+        //         } else if (/x86_64/i.test(userAgent)) {
+        //             architecture = "x86_64 (64-bit)";
+        //         }
+        //     }
+
+        //     return architecture;
+        // }
+
+        // Display the detected architecture
+        
+        function getAndroidArchitecture() {
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            const platform = navigator.platform;
+
+            console.log("User Agent:", userAgent);  // Log the user agent string
+            console.log("platform:", platform);  // Log the user agent string
+            let architecture = "Unknown";
+            if (/android/i.test(userAgent)) {
+                architecture = "ARM (32-bit or 64-bit)";
+                if (/x86/i.test(userAgent) || /i686/i.test(userAgent)) {
+                    architecture = "x86 (32-bit)";
+                } else if (/x86_64/i.test(userAgent)) {
+                    architecture = "x86_64 (64-bit)";
+                }
+            }
+            return architecture + " (" + platform + ")";
+        }
+        document.getElementById("device-info").innerText = "Detected Architecture: " + getAndroidArchitecture();
+    </script>
+
+    <center>
+            <button onclick='getAuthCode()' >1-BasGate UserInfoV2</button>
+            <button onclick='getAuthCode()' >1-BasGate Auth</button>
+            <button onclick='processPayment()' >2-BasGate Payment</button>
+            <button onclick='checkPayment()' >3-BasGate Status</button>
+    </center>
+</body>
+</html>
+
+ <script>
+    var authInfo;
+    var access_token='';
+    var userInfo={}
+    var orderId=null
+    const generateOrderId = () => {
+        if(orderId!=null)return orderId;
+        orderId='1111' + Math.floor(Math.random() * 1000000);
+        return orderId;
+    };
+    
+    async function getAuthCode(){
+        console.log("====== getAuthCode() ===========");
+        if(!isJSBridgeReady){
+            alert("BasSDK is not ready yet")
+            return
+        }
+        console.log(BAS_CLIENT_ID);
+        let user = document.createElement("h6");
+        try {
+            authInfo=  await getBasAuthCode(BAS_CLIENT_ID).then(async (result)=>{
+                try {
+                    let div = document.createElement("div");
+                    let heading1 = document.createElement("h6");
+                    heading1.innerText = `Auth Data :\n${JSON.stringify(result?.data)}`;
+                    div.appendChild(heading1)
+                    document.body.appendChild(div);
+                    try {
+                    await getUserInfo(result?.data?.authId).then((u)=>{
+                        userInfo=u.data
+                        access_token=result.access_token
+                        console.log("userInfo :",JSON.stringify(u));
+                        user.innerText = `User Data :\n${JSON.stringify(u.data)}`;
+                        document.body.appendChild(user);
+                    });
+                    
+                    } catch (error) {
+                        console.log("ERROR 3:",error);
+                        return {}
+                    }   
+                    // return result
+                } catch (error) {
+                    console.log("ERROR :", error)
+                    return {}
+                }
+            });
+
+            // if(authInfo)
+            // {
+                
+            // }else{
+            //     user.innerText = `authInfo :${authInfo}`;
+            // }
+        } catch (error) {
+            console.log("ERROR 3:",error);
+        }
+    }
+    
+
+    async function getUserInfoV2(){
+        console.log("====== getUserInfoV2() ===========");
+        if(!isJSBridgeReady){
+            alert("BasSDK is not ready yet")
+            return
+        }
+        console.log(BAS_CLIENT_ID);
+        let user = document.createElement("h6");
+        try {
+            authInfo=  await getBasAuthCode(BAS_CLIENT_ID).then(async (result)=>{
+                try {
+                    await getUserInfoV2(result?.data?.authId).then((u)=>{
+                        userInfo=u.data
+                        access_token=result.access_token
+                        console.log("userInfo :",JSON.stringify(u));
+                        user.innerText = `User Data :\n${JSON.stringify(u.data)}`;
+                        document.body.appendChild(user);
+                    });
+ 
+                } catch (error) {
+                    console.log("ERROR :", error)
+                    return {}
+                }
+            });
+
+            // if(authInfo)
+            // {
+                
+            // }else{
+            //     user.innerText = `authInfo :${authInfo}`;
+            // }
+        } catch (error) {
+            console.log("ERROR 3:",error);
+        }
+    }
+    
+    async function processPayment(){
+        console.log("===== processPayment() ======");
+       //INFO: Check if not already loggined-in 
+        // if(!userInfo) await getBasAuthCode(BAS_CLIENT_ID)
+
+        let myOrder={
+            "orderDetails": [{"Product":"IPHONE 14 PRO MAX","Type":"Unit","Price":5400,"Qty":1,"SubTotalPrice":5400},{"Product":"IPHONE 13 PRO MAX","Type":"Unit","Price":4400,"Qty":1,"SubTotalPrice":4400}],
+            "paymentProvider":"BAS_GATE",
+            "customerInfo":userInfo,
+            "amount":{"value": 1100.0, "currency": "YER"},
+            "orderId":generateOrderId()
+        }
+
+        // alert(JSON.stringify(userInfo))
+        let payment = document.createElement("h6");
+        try {
+            try {
+                let paymentInfo=  await getPayment(myOrder).then(async (result)=>{
+                    alert(JSON.stringify(result))
+                    console.log("processPayment result :",JSON.stringify(result));
+                    if(result && result.authenticated==true){
+                        var data={
+                            orderId:result.order?.orderId ?? '785428',
+                            trxStatusId:result?.trxStatusId ?? '1111',
+                            trxStatus:result?.trxStatus ?? '1111',
+                            trxId:result?.trxId ?? '1111',
+                            trxToken:result?.trxToken ?? '1111',
+                            authenticated:result?.authenticated ?? '1111'
+                        }
+                        orderId=result?.order?.orderId ?? '785428'
+                        payment.innerText = `Payment Data :\n${JSON.stringify(data)}`;
+                        document.body.appendChild(payment);
+                        var paymentResultData= await getBasPayment(result);
+                        let paymentResultElement = document.createElement("h6");
+                        paymentResultElement.innerText = `BasAPP Return Data :\n${JSON.stringify(paymentResultData)}`;
+                        document.body.appendChild(paymentResultElement);
+                    }
+                });   
+            } catch (error) {
+                console.log("ERROR 3:",error);
+            }    
+        } catch (error) {
+            console.log("ERROR 3:",error);
+        }
+    }
+
+    
+    async function checkPayment(){
+        console.log("===== processPayment() ======");
+        console.log("check generateOrderId() :",generateOrderId())
+        let paymentStatus = document.createElement("h6");
+        try {
+            //INFO: Check if not already loggined-in 
+            if(!userInfo) await getBasAuthCode(BAS_CLIENT_ID)
+            try {
+                let paymentInfo=  await checkPaymentStatus(generateOrderId()).then(async (result)=>{
+                    alert(JSON.stringify(result))
+                    if(result){
+                        console.log("checkPaymentStatus result :",JSON.stringify(result));
+                        var data={
+                            orderId:result.order?.orderId ?? '785428',
+                            trxStatusId:result.trxStatusId ?? '1111',
+                            trxStatus:result.trxStatus ?? 'Recoreded',
+                            trxToken:result.trxToken ?? '1111',
+                            authenticated:result.order?.description ?? '1111'
+                        }
+                        orderId=result.order?.orderId ?? '785428'
+                        paymentStatus.innerText = `Payment Status Result :\n${JSON.stringify(result)}`;
+                        document.body.appendChild(paymentStatus);
+                    }
+                });
+               
+            } catch (error) {
+                console.log("ERROR 3:",error);
+            }    
+        } catch (error) {
+            console.log("ERROR 3:",error);
+        }
+    }
+
+
+</script>
