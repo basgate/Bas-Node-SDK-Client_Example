@@ -34,7 +34,7 @@ async function getUserInfoV2(authId) {
     var raw = JSON.stringify({
         "authid": authId
     });
-
+    // This request is used to get the user information from the authid
     var url = `${BASE_URL}/auth/userinfov2`
     var requestOptions = {
         method: 'POST',

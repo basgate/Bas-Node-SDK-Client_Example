@@ -12,8 +12,8 @@ var BAS_CLIENT_ID_TEST = '653ed1ff-59cb-41aa-8e7f-0dc5b885a024'
 var BAS_CLIENT_ID = BAS_ENVIORMENT == 'TEST' ? BAS_CLIENT_ID_TEST : BAS_CLIENT_ID_PROD
 
 ///////// Merchant API URLS ////////////////////////
-var BASE_URL_PROD = "https://bas-node-sdk.onrender.com"
-var BASE_URL_TEST = "http://localhost:3000"
+var BASE_URL_PROD = "https://bas-node-sdk.onrender.com" // Change this to your Production API Base URL
+var BASE_URL_TEST = "http://localhost:3000"             // Change this to your Test API Base URL
 var BASE_URL = BAS_ENVIORMENT == 'TEST' ? BASE_URL_TEST : BASE_URL_PROD
 
 
